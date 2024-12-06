@@ -3,48 +3,79 @@ from manim import *
 
 class MyScene(ThreeDScene):
     def construct(self):
-        self.set_camera_orientation(phi=0 * DEGREES, theta=-0 * DEGREES)
+        self.set_camera_orientation(phi=45 * DEGREES, theta=30 * DEGREES)
 
+        # Create 3D axes
         axes = ThreeDAxes()
 
-        circle = Circle()  # create a circle
-        circle.set_fill(ORANGE, opacity=1.0)  # set the color and transparency
+        # Prism dimensions (matching the T-shape)
+        prism_length = 4  # Length of the top bar of T
+        prism_width = 4  # Width of the T
+        prism_thickness = 0.1  # Thickness of the prism
 
-        # Create the vertical bar of the upright T
-        vertical_bar = Rectangle(height=1, width=0.5, color=ORANGE)
+        # Create the prism
+        Substrate = Prism(dimensions=[prism_length, prism_width, prism_thickness])
+        Substrate.set_fill(BLUE, opacity=1.0)
+        Substrate.set_stroke(BLUE_E, width=2)
 
-        # Create the horizontal bar of the upright T
-        horizontal_bar = Rectangle(height=0.5, width=2, color=ORANGE)
-        horizontal_bar.next_to(vertical_bar, UP, buff=0)  # Position above the vertical bar
+        # Create the T-shape using VMobject (half-size)
+        t_shape = VMobject()
+        t_shape.set_fill(ORANGE, opacity=1.0)
+        t_shape.set_stroke(RED, width=4)
 
-        # Group to form the upright T shape
-        upright_t = VGroup(vertical_bar, horizontal_bar)
+        # Define the T-shape's vertices
+        t_shape.set_points_as_corners([
+            [-1, 0.5, 0],  # Top-left corner of T
+            [1, 0.5, 0],  # Top-right corner of T
+            [1, 0, 0],  # Bottom-right corner of top bar
+            [0.25, 0, 0],  # Right side of vertical bar
+            [0.25, -1, 0],  # Bottom-right of vertical bar
+            [-0.25, -1, 0],  # Bottom-left of vertical bar
+            [-0.25, 0, 0],  # Left side of vertical bar
+            [-1, 0, 0],  # Bottom-left corner of top bar
+            [-1, 0.5, 0],  # Back to start to close the shape
+        ])
 
-        # Create the vertical bar of the inverted T
-        inverted_vertical_bar = Rectangle(height=1, width=0.5, color=ORANGE)
+        # Create an inverted T-shape (mirrored vertically)
+        inverted_t_shape = VMobject()
+        inverted_t_shape.set_fill(ORANGE, opacity=1.0)
+        inverted_t_shape.set_stroke(RED, width=4)
 
-        # Create the horizontal bar of the inverted T
-        inverted_horizontal_bar = Rectangle(height=0.5, width=2, color=ORANGE)
-        inverted_horizontal_bar.next_to(inverted_vertical_bar, DOWN, buff=0)  # Position below the vertical bar
+        # Define the inverted T-shape's vertices
+        inverted_t_shape.set_points_as_corners([
+            [-1, -0.5, 0],  # Bottom-left corner of inverted T
+            [1, -0.5, 0],  # Bottom-right corner of inverted T
+            [1, 0, 0],  # Top-right corner of bottom bar
+            [0.25, 0, 0],  # Right side of vertical bar
+            [0.25, 1, 0],  # Top-right of vertical bar
+            [-0.25, 1, 0],  # Top-left of vertical bar
+            [-0.25, 0, 0],  # Left side of vertical bar
+            [-1, 0, 0],  # Top-left corner of bottom bar
+            [-1, -0.5, 0],  # Back to start to close the shape
+        ])
+        t_shape.shift(UP * 1.5)
+        inverted_t_shape.shift(DOWN * 1.5)
 
-        # Group to form the inverted T shape
-        inverted_t = VGroup(inverted_vertical_bar, inverted_horizontal_bar)
+        # Position the shapes for visibility
+        both_t_shapes = VGroup(t_shape, inverted_t_shape)
+        both_t_shapes.move_to([0, 0, -0.1])  # Position on the opposite side of the prism
 
-        # Position the inverted T beneath the upright T
-        inverted_t.next_to(upright_t, DOWN, buff=0.5)
+        # Create a Silicon (using a sphere scaled by 0.5 in the Z-axis)
+        Silicon = Sphere(radius=2.0, u_range=[0.0, PI], v_range=[0.0, PI])
+        Silicon.set_fill(GRAY, opacity=1.0)
+        Silicon.move_to([0, 0, 1])  # Position on the opposite side of the prism
+        Silicon.rotate(angle=90 * DEGREES, axis=RIGHT)  # Rotate around the Y-axis
 
-        # Group both T shapes and center them
-        both_t_shapes = VGroup(upright_t, inverted_t)
-        both_t_shapes.move_to(ORIGIN)  # Center the group on the screen
-        both_t_shapes.set_fill(ORANGE, opacity=1.0)  # set the color and transparency
+        # Add all objects to the scene
+        self.add(Substrate, both_t_shapes, Silicon)
+        # Apply depth test to avoid visibility issues through objects
+        Substrate.set_depth_test(True)
+        both_t_shapes.set_depth_test(True)
+        Silicon.set_depth_test(True)
 
-        # Transform the circle into the T shapes
-        self.play(FadeIn(circle))  # Show the circle
-        self.wait(1)
-        self.play(Transform(circle, both_t_shapes))  # Transform the circle into the T shapes
-        self.wait(2)
-
-        self.begin_ambient_camera_rotation(90 * DEGREES / 3, about='phi')
-        self.begin_ambient_camera_rotation(90 * DEGREES / 3, about='theta')
-        self.wait(2)
-        self.stop_ambient_camera_rotation(about='phi')
+        # Camera movements
+        self.begin_ambient_camera_rotation(rate=0.1)  # Slow rotation
+        self.wait(10)
+        self.stop_ambient_camera_rotation()
+        self.move_camera(phi=75 * DEGREES, theta=45 * DEGREES, zoom=1.2)
+        self.wait(5)
