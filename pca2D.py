@@ -15,14 +15,14 @@ def thz_dummy_pulse(x):
 
 class MyScene(Scene):
     def construct(self):
-        # Create a rectangle and a semicircle
-        semicircle = Arc(radius=1, angle=PI, arc_center=ORIGIN)
-        semicircle.rotate(-90 * DEGREES, about_point=ORIGIN)
+        # Create a rectangle and a semicircle_tx
+        semicircle_rx = Arc(radius=1, angle=PI, arc_center=ORIGIN)
+        semicircle_rx.rotate(-90 * DEGREES, about_point=ORIGIN)
         line = Line([0, -1, 0], [0, 1, 0])
-        semicircle.next_to(line, RIGHT, buff=0.0)
-        semicircle.set_fill(color=GRAY, opacity=0.5)
+        semicircle_rx.next_to(line, RIGHT, buff=0.0)
+        semicircle_rx.set_fill(color=GRAY, opacity=0.5)
 
-        Silicon = VGroup(line, semicircle)
+        Silicon = VGroup(line, semicircle_rx)
         Silicon.set_fill(GRAY)
 
         Title = Text("Photoconductive Antenna (PCA)")
@@ -50,7 +50,7 @@ class MyScene(Scene):
         wire8 = Line([-0.075, -1.5, 0], [-0.075, -0.9, 0])
         Circuit = VGroup(wire1, wire2, wire3, wire4, wire5, wire6, wire7, wire8)
 
-        # Add the rectangle, semicircle, and photon to the scene
+        # Add the rectangle, semicircle_tx, and photon to the scene
         self.play(Create(Circuit), Create(Silicon), Create(Title), Create(Electrodes), Create(Substrate))
 
         # Create a time tracker for animation
@@ -88,18 +88,17 @@ class MyScene(Scene):
 
         self.play(FadeOut(Cone), FadeOut(Wave), FadeOut(Title))
 
-        PCA = VGroup(Electrodes, Silicon, Circuit, Substrate)
-
+        PCA_rx = VGroup(Electrodes, Silicon, Circuit, Substrate)
         # Increase the size of everything to zoom in without increasing the stroke width
-        self.play(PCA.animate.scale(30).move_to([-5, -0.1, 0]), run_time=2)
+        self.play(PCA_rx.animate.scale(30).move_to([-5, -0.1, 0]), run_time=2)
 
         # Keep everything on screen
         self.wait(1)
 
         # draw electric field
-        arrow1 = Arrow(end=[-2.25, -3, 0], start=[-2.25, 3, 0], stroke_width=1.0, fill_opacity=0.5)
-        arrow2 = Arrow(end=[-2.80, -3, 0], start=[-2.80, 3, 0], stroke_width=1.0, fill_opacity=0.5)
-        arrow3 = Arrow(end=[-3.35, -3, 0], start=[-3.35, 3, 0], stroke_width=1.0, fill_opacity=0.5)
+        arrow1 = Arrow(end=[-2.25, -3, 0], start=[-2.25, 3, 0], fill_opacity=0.5)
+        arrow2 = Arrow(end=[-2.80, -3, 0], start=[-2.80, 3, 0], fill_opacity=0.5)
+        arrow3 = Arrow(end=[-3.35, -3, 0], start=[-3.35, 3, 0], fill_opacity=0.5)
         field = Tex(r"$\vec{E}$", font_size=100)
         field.move_to([-4.5, 2.5, 0])
         self.play(FadeIn(field), Create(arrow1), Create(arrow2), Create(arrow3))
@@ -132,16 +131,100 @@ class MyScene(Scene):
         )
 
         thz_pulse.move_to([1, 0, 0])
-        self.add(thz_pulse)
-
-        self.play(FadeOut(laser), *[electron.animate.move_to([-1.25, 2.5, 0]) for electron in electrons],
-                  *[text.animate.move_to([-1.25, 2.5, 0]) for text in texts],
-                  *[hole.animate.move_to([-1.25, -2.5, 0]) for hole in holes],
-                  thz_pulse.animate.move_to([10, 0, 0]), rate_func=linear)
+        self.play(FadeOut(laser, run_time=0.1),
+                  *[electron.animate.move_to([-1.25, 2.5, 0]).set_rate_func(linear) for electron in electrons],
+                  *[text.animate.move_to([-1.25, 2.5, 0]).set_rate_func(linear) for text in texts],
+                  *[hole.animate.move_to([-1.25, -2.5, 0]).set_rate_func(linear) for hole in holes],
+                  FadeIn(thz_pulse, run_time=0.1), run_time=1.0
+                  )
 
         self.play(
-            *[FadeOut(hole) for hole in holes],
-            *[FadeOut(text) for text in texts],
-            *[FadeOut(electron) for electron in electrons],
-            run_time=0.1)
+            *[electron.animate.move_to([-51.25, 2.5, 0]).set_run_time(10.0) for electron in electrons],
+            *[text.animate.move_to([-51.25, 2.5, 0]).set_run_time(10.0) for text in texts],
+            *[hole.animate.move_to([-51.25, -2.5, 0]).set_run_time(10.0) for hole in holes],
+            # *[FadeOut(hole, run_time=0.1) for hole in holes],
+            # *[FadeOut(text, run_time=0.1) for text in texts],
+            # *[FadeOut(electron, run_time=0.1) for electron in electrons],
+            PCA_rx.animate.move_to([-50, 0, 0]).set_run_time(10.0),
+            field.animate.move_to([-50, 2.5, 0]).set_run_time(10.0),
+            arrow1.animate.move_to([-50, 0, 0]).set_run_time(10.0),
+            arrow2.animate.move_to([-50, 0, 0]).set_run_time(10.0),
+            arrow3.animate.move_to([-50, 0, 0]).set_run_time(10.0),
+            # PCA_tx.animate.move_to([0, 0, 0]).set_run_time(10.0),
+        )
+
+        self.wait(1)
+
+        # Create a rectangle and a semicircle_tx
+        semicircle_tx = Arc(radius=1, angle=PI, arc_center=ORIGIN)
+        semicircle_tx.rotate(90 * DEGREES, about_point=ORIGIN)
+        line_tx = Line([0, -1, 0], [0, 1, 0])
+        semicircle_tx.next_to(line_tx, LEFT, buff=0.0)
+        semicircle_tx.set_fill(color=GRAY, opacity=0.5)
+
+        Silicon_tx = VGroup(line, semicircle_tx)
+        Silicon_tx.set_fill(GRAY)
+
+        Substrate_tx = Rectangle(width=0.05, height=2, color=BLUE, fill_color=BLUE, fill_opacity=1)
+        Substrate_tx.next_to(Silicon_tx, RIGHT, buff=0.0)
+
+        anode = Rectangle(width=0.05, height=0.8, color=ORANGE, fill_opacity=1)
+        cathode = Rectangle(width=0.05, height=0.8, color=ORANGE, fill_opacity=1)
+        anode.move_to([0, 0.5, 0])
+        cathode.move_to([0, -0.5, 0])
+
+        laser_tx = Line([6, 0, 0], [-0.3, 0, 0], color=RED, stroke_width=100)
+
+        Electrodes_tx = VGroup(anode, cathode)
+        Electrodes_tx.set_fill(ORANGE)
+        Electrodes_tx.next_to(Substrate_tx, RIGHT, buff=0.0)
+        PCA_tx = VGroup(Electrodes_tx, Silicon_tx, Substrate_tx)
+        PCA_tx.scale(30)
+
+        arrow = Arrow(end=[-1.3, 1.2, 0], start=[-1.3, -0.6, 0], fill_opacity=0.5)
+        field = Tex(r"$\vec{E}$", font_size=50)
+        field.move_to([-1.8, 1.5, 0])
+        self.play(FadeIn(arrow), FadeIn(field))
+
+        self.play(PCA_tx.animate.move_to([-68.28 / 3 * 30, 0, 0]).set_run_time(10.0),
+                  thz_pulse.animate.move_to([-1, 0, 0]),
+                  field.animate.move_to([-3.5, 1.5, 0]),
+                  arrow.animate.move_to([-3, 0.3, 0]),
+                  )
+        current_arrow = Arrow(end=[0.5, 2, 0], start=[0.5, -2, 0], fill_opacity=0.5)
+        current = Tex(r"$\vec{I}$", font_size=50)
+        current.move_to([1, 1.5, 0])
+        self.play(Create(laser_tx, run_time=0.1))
+
+        electrons = []
+        holes = []
+        texts = []
+        for i in range(3):
+            electron = Circle(radius=0.3, color=ORANGE, fill_opacity=1)
+            electron.move_to([-1, - 0.5 - i, 0])
+            electrons.append(electron)
+            hole = Circle(radius=0.3, color=BLACK, fill_opacity=1)
+            hole.move_to([-1, + 0.5 + i, 0])
+            holes.append(hole)
+            text = Tex(r"e$^{-}$")
+            text.move_to([-1, - 0.5 - i, 0])
+            texts.append(text)
+            self.play(FadeIn(hole), FadeIn(electron), FadeIn(text), run_time=0.1)
+        self.remove(thz_pulse)
+        self.play(
+            FadeIn(current_arrow), FadeIn(current),
+            *[electron.animate.move_to([-1, -2.5, 0]).set_run_time(10.0) for electron in electrons],
+            *[text.animate.move_to([-1, -2.5, 0]).set_run_time(10.0) for text in texts],
+            *[hole.animate.move_to([-1, 2.5, 0]).set_run_time(10.0) for hole in holes],
+        )
+        # self.play(
+        #     *[FadeOut(hole, run_time=0.1) for hole in holes],
+        #     *[FadeOut(text, run_time=0.1) for text in texts],
+        #     *[FadeOut(electron, run_time=0.1) for electron in electrons],
+        #     FadeOut(laser_tx),
+        #     FadeOut(field),
+        #     FadeOut(arrow),
+        #     FadeOut(current),
+        #     FadeOut(current_arrow),
+        # )
         self.wait(1)
